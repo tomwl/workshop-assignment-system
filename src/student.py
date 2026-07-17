@@ -157,7 +157,8 @@ class Student:
         workshop = self.workshops[day]
     
         if workshop is not None:
-            workshop.students[day].remove(self)
+            if self in workshop.students[day]:
+                workshop.students[day].remove(self)
     
         self.workshops[day] = None
         

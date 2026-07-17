@@ -98,6 +98,18 @@ class Workshop:
         return False
     
     def moveStudentToDay(self, student, day):
+        # prevent same workshop on both days
+        if day == days.day1 and student.workshops[days.day2] == self:
+            return False
+         
+        if day == days.day2 and student.workshops[days.day1] == self:
+            return False
+        
+        # shouldn't be using this function if they don't have a workshop already!
+        oldWorkshop = student.workshops[day]
+        if oldWorkshop is None:
+            return False   
+       
         student.removeFromWorkshop(day)
 
         self.students[day].append(student)

@@ -50,9 +50,7 @@ def assignWorkshops(forms, workshops, fileIO):
     """
     optimise = True
     counter = 1
-    unassignedlist = []
-    aloneStudentsList = []
-    totalScoreList = []
+    valuesOnMinScore = { "Unassigned": 0, "AloneStudents": 0, "TotalScore": 100000000 }
     
     while optimise and counter <= ITERATIONS:
         logger.info("Iteration %s" % counter)
@@ -93,7 +91,6 @@ def assignWorkshops(forms, workshops, fileIO):
             scoring.scoreWorkshops(workshops, forms, days.day1).total
             + scoring.scoreWorkshops(workshops, forms, days.day2).total
         )
-        totalScoreList.append(totalScore)
         
         unassigned = 0
         for f in forms:
@@ -101,31 +98,31 @@ def assignWorkshops(forms, workshops, fileIO):
                 f.getNumberOfUnassigned(days.day1)
                 + f.getNumberOfUnassigned(days.day2)
             )
-        unassignedlist.append(unassigned) 
         
         aloneStudents = 0
         for workshop in workshops:
             aloneStudents += workshop.getNumberOfStudentsAloneOnDay(days.day1)
             aloneStudents += workshop.getNumberOfStudentsAloneOnDay(days.day2)
-        aloneStudentsList.append(aloneStudents)
         
         # if total score < n then this is awesome and we can stop after this iteration
         if totalScore < 200000:
             optimise = False
-        if np.all(np.array(totalScoreList) > totalScore):
+        if totalScore < valuesOnMinScore["TotalScore"]:
             errorChecking(workshops, getAllStudents(forms))
             fileIO.writeWorkshops(workshops)
-            fileIO.writeStudents(forms)  
+            fileIO.writeStudents(forms) 
+            valuesOnMinScore["Unassigned"] = unassigned
+            valuesOnMinScore["AloneStudents"] = aloneStudents
+            valuesOnMinScore["TotalScore"] = totalScore
             
-        if counter % 20 == 0:
+        if counter % 2 == 0:
             print(counter)
         counter += 1
-        
-    logger.warning("Unassigned %s", unassignedlist)
-    logger.warning("Min unassigned %s", min(unassignedlist))
-    print("Unassigned min. " + str(min(unassignedlist)))
-    print("Alone min. " + str(min(aloneStudentsList)))
-    print("Total min. " + str(min(totalScoreList)))
+    
+    print("Values on minimum score:")
+    print("Unassigned ",  valuesOnMinScore["Unassigned"])
+    print("Alone ", valuesOnMinScore["AloneStudents"])
+    print("Total score ", valuesOnMinScore["TotalScore"])
     
     
 def getAllStudents(forms):
