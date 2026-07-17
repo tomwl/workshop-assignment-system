@@ -80,7 +80,8 @@ class Student:
         return self.preferences
     
     def getAllValidPrefences(self, day):
-        """This does the same as getAvailablePreferences below, but doesn't remove 
+        """
+        This does the same as getAvailablePreferences below, but doesn't remove 
         full workshops from the return list
         """
         result = list(
@@ -151,4 +152,12 @@ class Student:
         wsDay2 = self.getWorkshopOnDay(days.day2)
         if not wsDay1 is None and not wsDay2 is None and not wsDay1.isTwoDay:
             return wsDay1 == wsDay2
+        
+    def removeFromWorkshop(self, day):
+        workshop = self.workshops[day]
+    
+        if workshop is not None:
+            workshop.students[day].remove(self)
+    
+        self.workshops[day] = None
         

@@ -75,16 +75,35 @@ class Workshop:
         self.students[days.day2] = self.students[days.day1]
         
     def assignStudentToDay(self, student, day, forceAssign=False):
-        if not day in self.students or not student.workshops[day] is None:
+        if day == days.day1 and student.workshops[days.day2] == self:
             return False
-        if (forceAssign or 
-            not self.isFull(day) and 
-            self.isStudentAgeCorrectOnDay(student, day)
-            ):
+    
+        if day == days.day2 and student.workshops[days.day1] == self:
+            return False
+    
+        if day not in self.students or student.workshops[day] is not None:
+            return False
+    
+        if (
+            forceAssign
+            or (
+                not self.isFull(day)
+                and self.isStudentAgeCorrectOnDay(student, day)
+            )
+        ):
             self.students[day].append(student)
             student.assignWorkshop(self, day)
-            return True   
+            return True
+    
         return False
+    
+    def moveStudentToDay(self, student, day):
+        student.removeFromWorkshop(day)
+
+        self.students[day].append(student)
+        student.assignWorkshop(self, day)
+    
+        return True
         
     def getStudentsOnDay(self, day):
         if not day in self.students:
@@ -98,7 +117,30 @@ class Workshop:
         )
     
     def getNumberOfStudentsAloneOnDay(self, day):
-        return sum(1 for size in self.getFormGroupSizes(day).values() if size == 1)
+        return sum(
+            1 
+            for size in self.getFormGroupSizes(day).values() 
+            if size == 1
+        )
+    
+    def getFormAlonePenalty(self, day):
+        penalty = 0
+    
+        for size in self.getFormGroupSizes(day).values():
+            if size == 1:
+                penalty += 10
+            elif size == 2: # minor penalty for groups of 2 people
+                penalty += 1
+    
+        return penalty
+    
+    def getLargeFormGroupPenalty(self, day):
+        penalty = 0
+        for size in self.getFormGroupSizes(day).values():
+            if size > 4:
+                penalty += (size - 4) ** 2
+    
+        return penalty
     
     def isFull(self, day):
         if len(self.getStudentsOnDay(day)) >= self.capacity:

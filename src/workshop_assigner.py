@@ -9,20 +9,22 @@ A program to organise the workshop days at Draschestraße
 
 import os
 import numpy as np
+from collections import Counter
 import FileIO
 from logging_config import logger
 from logging_config import logging_cleanup
 import days
 import repair
+import scoring
 
 # TODO: try and spread the kids more to avoid tiny workshop class sizes, also over the days
 # TODO: make sure that someone who is alone on day one is not alone on day 2
 
 # if there are less than this number of students who want to do a workshop it is "low demand"
-low_demand_workshop_value = 40
+LOW_DEMAND_WORKSHOP_VALUE = 40
 
 # the number of iterations we should perform to try and best match students to workshops
-iterations = 20000
+ITERATIONS = 200
     
 def assignWorkshops(forms, workshops, fileIO):
     """
@@ -49,8 +51,10 @@ def assignWorkshops(forms, workshops, fileIO):
     optimise = True
     counter = 1
     unassignedlist = []
+    aloneStudentsList = []
+    totalScoreList = []
     
-    while optimise and counter <= iterations:
+    while optimise and counter <= ITERATIONS:
         logger.info("Iteration %s" % counter)
         day = days.day1
         for w in workshops:
@@ -83,43 +87,86 @@ def assignWorkshops(forms, workshops, fileIO):
             f.assignLeftoverStudents(workshops, day)
             f.resetGroups()
         
+        repair.repairAssignments(forms, workshops)
+        
+        totalScore = (
+            scoring.scoreWorkshops(workshops, forms, days.day1).total
+            + scoring.scoreWorkshops(workshops, forms, days.day2).total
+        )
+        totalScoreList.append(totalScore)
+        
         unassigned = 0
         for f in forms:
             unassigned += (
                 f.getNumberOfUnassigned(days.day1)
                 + f.getNumberOfUnassigned(days.day2)
             )
+        unassignedlist.append(unassigned) 
         
-        # if unassigned < 30 then this is awesome and we can stop after this iteration
-        if unassigned < 30:
+        aloneStudents = 0
+        for workshop in workshops:
+            aloneStudents += workshop.getNumberOfStudentsAloneOnDay(days.day1)
+            aloneStudents += workshop.getNumberOfStudentsAloneOnDay(days.day2)
+        aloneStudentsList.append(aloneStudents)
+        
+        # if total score < n then this is awesome and we can stop after this iteration
+        if totalScore < 200000:
             optimise = False
-        if np.all(np.array(unassignedlist) > unassigned):
+        if np.all(np.array(totalScoreList) > totalScore):
             errorChecking(workshops, getAllStudents(forms))
             fileIO.writeWorkshops(workshops)
-            fileIO.writeStudents(forms)
-        unassignedlist.append(unassigned)       
+            fileIO.writeStudents(forms)  
+            
+        if counter % 20 == 0:
+            print(counter)
         counter += 1
-        logger.warning("Unassigned = %s" % unassigned)
         
     logger.warning("Unassigned %s", unassignedlist)
     logger.warning("Min unassigned %s", min(unassignedlist))
     print("Unassigned min. " + str(min(unassignedlist)))
+    print("Alone min. " + str(min(aloneStudentsList)))
+    print("Total min. " + str(min(totalScoreList)))
     
     
 def getAllStudents(forms):
     return [s for f in forms for s in f.getStudents()]
 
+
+def errorCheckStudentAssignedTwoWorkshopsOnADay(day, workshops, students):
+    students = [
+        student
+        for w in workshops
+        for student in w.getStudentsOnDay(day)
+    ]
+    
+    names = [
+        student.getName()
+        for student in students
+    ]
+    
+    duplicates = [
+        name for name, count in Counter(names).items()
+        if count > 1
+    ]
+    
+    for name in duplicates:
+        print("\nDUPLICATE:", name)
+    
+        for w in workshops:
+            for student in w.getStudentsOnDay(day):
+                if student.getName() == name:
+                    print("  Found in workshop:", w.name)
+        return True
+    return False
+
 def errorChecking(workshops, students):    
     for w in workshops:
         if w.isTwoDay and not w.getStudentsOnDay(days.day1) == w.getStudentsOnDay(days.day2):
             raise RuntimeError("Two day workshop students don't match")
-    names = (w.getStudentsOnDay(days.day1) for w in workshops)
-    names = [j for sub in names for j in sub]
-    if not len(names) == len(set(names)):
-        raise RuntimeError("Student has been assigned two workshops on day1")
-    names = list(w.getStudentsOnDay(days.day2) for w in workshops)
-    names = [j for sub in names for j in sub]   
-
+            
+    if errorCheckStudentAssignedTwoWorkshopsOnADay(days.day1, workshops, students):
+        raise RuntimeError("Student has been assigned two workshops on day 1")
+        
     for s in students:
         for ws in s.workshops.values():
             if ws is not None and ws not in s.getAllPreferences():
@@ -131,7 +178,7 @@ def assignLessDemand(form, workshops, day):
     for s in form.studentsToAssign(day):
         assignedWorkshop = False
         for p in s.getAvailablePreferencesAscByPopularity(day):
-            if p.prospectiveStudents <= low_demand_workshop_value and not assignedWorkshop:
+            if p.prospectiveStudents <= LOW_DEMAND_WORKSHOP_VALUE and not assignedWorkshop:
                 p_name = p.name
                 w = [x for x in workshops if x.name == p_name]
                 for ws in w:
@@ -187,10 +234,10 @@ def main():
         assignWorkshops(forms, workshops, fileIO)
         
         # print some stuff at the end to get some feeling for the results
-        for w in workshops:
-            print(w.name, w.prospectiveStudents)
-            print(len(w.getStudentsOnDay(days.day1)))
-            print(len(w.getStudentsOnDay(days.day2)))
+        #for w in workshops:
+         #   print(w.name, w.prospectiveStudents)
+          #  print(len(w.getStudentsOnDay(days.day1)))
+           # print(len(w.getStudentsOnDay(days.day2)))
     finally:
         logging_cleanup()
     
