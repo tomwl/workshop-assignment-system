@@ -79,6 +79,23 @@ class Student:
     def getAllPreferences(self):
         return self.preferences
     
+    def getAllValidPrefences(self, day):
+        """This does the same as getAvailablePreferences below, but doesn't remove 
+        full workshops from the return list
+        """
+        result = list(
+            filter(
+            lambda p: not p.preAssigned and 
+                p.isStudentAgeCorrectOnDay(self, day), 
+            self.preferences)
+            )
+        if day == days.day2:
+            result = list(filter(lambda p: not p.isTwoDay, result))
+            if self.workshops[days.day1] in result: 
+                result.remove(self.workshops[days.day1])
+                
+        return result
+    
     def getAvailablePreferences(self, day):
         """Finds available preferences of a student based on if preference full, 
         not 2 day workshop and not already assigned to the student on day 1

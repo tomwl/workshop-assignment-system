@@ -7,6 +7,7 @@ The workshops that can be assigned a list of Student for the respective days
 @author: tom
 """
 import days
+from collections import Counter
 
 class Workshop:
     def __init__(
@@ -89,6 +90,15 @@ class Workshop:
         if not day in self.students:
             return None
         return self.students[day]
+    
+    def getFormGroupSizes(self, day):
+        return Counter(
+            student.form
+            for student in self.getStudentsOnDay(day)
+        )
+    
+    def getNumberOfStudentsAloneOnDay(self, day):
+        return sum(1 for size in self.getFormGroupSizes(day).values() if size == 1)
     
     def isFull(self, day):
         if len(self.getStudentsOnDay(day)) >= self.capacity:

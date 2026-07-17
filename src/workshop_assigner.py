@@ -8,11 +8,12 @@ A program to organise the workshop days at Draschestraße
 """
 
 import os
+import numpy as np
 import FileIO
 from logging_config import logger
 from logging_config import logging_cleanup
 import days
-import numpy as np
+import repair
 
 # TODO: try and spread the kids more to avoid tiny workshop class sizes, also over the days
 # TODO: make sure that someone who is alone on day one is not alone on day 2
@@ -52,7 +53,6 @@ def assignWorkshops(forms, workshops, fileIO):
     while optimise and counter <= iterations:
         logger.info("Iteration %s" % counter)
         day = days.day1
-        unassigned = 0
         for w in workshops:
             w.resetStudents()
         for f in forms:
@@ -68,7 +68,6 @@ def assignWorkshops(forms, workshops, fileIO):
                     s.copyDay1Workshop()
             f.assignLeftoverStudents(workshops, day)
             f.resetGroups()
-            unassigned += f.getNumberOfUnassigned(day)
             
         for w in workshops:
             if w.isTwoDay:
@@ -83,7 +82,13 @@ def assignWorkshops(forms, workshops, fileIO):
             f.addUnassignedStudents(workshops, day)
             f.assignLeftoverStudents(workshops, day)
             f.resetGroups()
-            unassigned += f.getNumberOfUnassigned(day)
+        
+        unassigned = 0
+        for f in forms:
+            unassigned += (
+                f.getNumberOfUnassigned(days.day1)
+                + f.getNumberOfUnassigned(days.day2)
+            )
         
         # if unassigned < 30 then this is awesome and we can stop after this iteration
         if unassigned < 30:
