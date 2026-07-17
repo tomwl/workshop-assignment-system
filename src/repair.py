@@ -30,7 +30,12 @@ def tryMoveSomeoneElse(unassignedStudent,
                 or alternative.isTwoDay):
                 continue
             
-            old_score = scoring.scoreWorkshops(workshops, forms, day)
+            old_score = scoring.scoreLocalChange(
+                [alternative, desiredWorkshop],
+                day,
+                0
+            )
+            
             # move occupant
             if not alternative.moveStudentToDay(occupant, day):
                 raise RuntimeError("Failed to move student to new workshop")
@@ -38,10 +43,14 @@ def tryMoveSomeoneElse(unassignedStudent,
             # assign rescued student
             desiredWorkshop.assignStudentToDay(unassignedStudent, day)
             
-            new_score = scoring.scoreWorkshops(workshops, forms, day)
-            
+            new_score = scoring.scoreLocalChange(
+                [alternative, desiredWorkshop],
+                day,
+                -1
+            )
+                        
             # if the scoring is lower (=better), then keep the change
-            if new_score.total < old_score.total:
+            if new_score < old_score:
                 return True
             
             # else revert back
@@ -100,11 +109,7 @@ def repairAssignments(forms, workshops):
                 if repairStudent(student, workshops, forms, days.day2):
                     successful_moves += 1
                     improved = True
-            if students_checked > 1000 and students_checked % 200 == 0:
-                print(
-                    "Students checked:", students_checked,
-                    "Successful moves:", successful_moves
-                )
+                    
         new_score = (
             scoring.scoreWorkshops(workshops, forms, days.day1).total
             + scoring.scoreWorkshops(workshops, forms, days.day2).total

@@ -8,7 +8,6 @@ A program to organise the workshop days at Draschestraße
 """
 
 import os
-import numpy as np
 from collections import Counter
 import FileIO
 from logging_config import logger
@@ -24,7 +23,7 @@ import scoring
 LOW_DEMAND_WORKSHOP_VALUE = 40
 
 # the number of iterations we should perform to try and best match students to workshops
-ITERATIONS = 200
+ITERATIONS = 1000
     
 def assignWorkshops(forms, workshops, fileIO):
     """
