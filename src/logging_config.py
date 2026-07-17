@@ -15,7 +15,7 @@ logger.setLevel(logging.INFO)
 # Prevent multiple handlers if the logger is configured multiple times
 if not logger.handlers:
     # Create a file handler to log to a file
-    file_handler = logging.FileHandler('logs/logfile.log', 'w', 'utf-8', logger.level)
+    file_handler = logging.FileHandler('../logs/logfile.log', 'w', 'utf-8', logger.level)
     file_handler.setLevel(logging.INFO)
 
     # Define log format

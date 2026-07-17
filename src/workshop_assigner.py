@@ -149,10 +149,11 @@ def orderForms(forms):
 def main():
     try:
         # read in the student preferences and workshop names
-        preferenceFile = os.path.join(os.getcwd(), 'student_data_2026.xlsx')
-        workshopsFile = os.path.join(os.getcwd(), 'Workshops_LIO.xlsx')
-        studentFileOut = "test_students_1.xlsx"
-        workshopsFileOut = "test_workshops_1.xlsx"
+        dataPath = os.path.join(os.getcwd(), '..\\data\\actual\\')
+        preferenceFile = os.path.join(dataPath, 'student_data_2026.xlsx')
+        workshopsFile = os.path.join(dataPath, 'Workshops_LIO.xlsx')
+        studentFileOut = os.path.join(dataPath, 'test_students_1.xlsx')
+        workshopsFileOut = os.path.join(dataPath, 'test_workshops_1.xlsx')
         fileIO = FileIO.FileIO(
             preferenceFile, workshopsFile, studentFileOut, workshopsFileOut)
         workshops = fileIO.initialiseWorkshops()
@@ -161,11 +162,11 @@ def main():
         forms = fileIO.initialisePreferences(workshops)
         
         # force assign students that have already had a workshop decided for them
-        preAssignedStudents = fileIO.blockStudents('ListeChinesischUndSI.xlsx', 
-                                               getAllStudents(forms), 
-                                               workshops)
-        
-        
+        preAssignedStudents = fileIO.blockStudents(
+            os.path.join(dataPath, 'ListeChinesischUndSI.xlsx'), 
+            getAllStudents(forms), 
+            workshops)
+                
         # filter in case students are too young/old for a workshop
         for f in forms:
             for s in f.getStudents():
@@ -181,10 +182,10 @@ def main():
         assignWorkshops(forms, workshops, fileIO)
         
         # print some stuff at the end to get some feeling for the results
-        #for w in workshops:
-         #   print(w.name, w.prospectiveStudents)
-          #  print(len(w.getStudentsOnDay(days.day1)))
-           # print(len(w.getStudentsOnDay(days.day2)))
+        for w in workshops:
+            print(w.name, w.prospectiveStudents)
+            print(len(w.getStudentsOnDay(days.day1)))
+            print(len(w.getStudentsOnDay(days.day2)))
     finally:
         logging_cleanup()
     

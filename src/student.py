@@ -68,9 +68,10 @@ class Student:
         self.workshops[days.day2] = self.workshops[days.day1]
             
     def filterPreferencesByAge(self):
-        for p in self.preferences:
-            if p.minYear > self.year or p.maxYear < self.year:
-                self.preferences.remove(p)
+        self.preferences = [
+            p for p in self.preferences
+            if p.minYear <= self.year <= p.maxYear
+        ]
                 
     def shufflePreferences(self):
         random.shuffle(self.preferences)
