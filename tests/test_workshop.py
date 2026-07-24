@@ -3,10 +3,14 @@
 Created on Fri Dec 20 07:53:49 2024
 
 @author: tom
+
+execute in command line in src directory:
+    python -m pytest ../tests/ -v to run all tests
 """
 
 import pytest
 from collections import Counter
+import days
 import form
 import workshop
 import student
@@ -22,8 +26,8 @@ def make_student(first_name="1", last_name="1", form_name="1A"):
 def make_workshop(capacity=2, min_max_years=None, is_two_day=False):
     if min_max_years is None:
         min_max_years = {
-            "Day1": (1, 4),
-            "Day2": (1, 4)
+            days.day1: (1, 4),
+            days.day2: (1, 4)
         }
     
     return workshop.Workshop(
@@ -38,7 +42,7 @@ def make_workshop(capacity=2, min_max_years=None, is_two_day=False):
 # ----------------------------------
 
 def test_name_returns_name_as_string():
-    ws = workshop.Workshop(123, 2, {"Day1": (1, 4)})
+    ws = workshop.Workshop(123, 2, {days.day1: (1, 4)})
     
     assert ws.name == "123"
 
@@ -53,12 +57,12 @@ def test_constructor_sets_is_two_day():
     assert ws.isTwoDay is True
 
 def test_constructor_sets_minimum_year():
-    ws = workshop.Workshop("1", 2, {"Day1": (2, 4), "Day2": (1, 5)})
+    ws = workshop.Workshop("1", 2, {days.day1: (2, 4), days.day2: (1, 5)})
     
     assert ws.minYear == 1
 
 def test_constructor_sets_maximum_year():
-    ws = workshop.Workshop("1", 2, {"Day1": (2, 4), "Day2": (1, 5)})
+    ws = workshop.Workshop("1", 2, {days.day1: (2, 4), days.day2: (1, 5)})
     
     assert ws.maxYear == 5
 
@@ -72,14 +76,14 @@ def test_resetStudents_empties_both_days():
     s = make_student()
     s.assignPreference(ws)
     
-    ws.assignStudentToDay(s, "Day1")
+    ws.assignStudentToDay(s, days.day1)
     
-    assert ws.getStudentsOnDay("Day1") == [s]
+    assert ws.getStudentsOnDay(days.day1) == [s]
     
     ws.resetStudents()
     
-    assert ws.getStudentsOnDay("Day1") == []
-    assert ws.getStudentsOnDay("Day2") == []
+    assert ws.getStudentsOnDay(days.day1) == []
+    assert ws.getStudentsOnDay(days.day2) == []
     
 # ----------------------------------
 # Tests for copyDay1Students
@@ -91,17 +95,17 @@ def test_copyDay1Students_copies_students_to_day2():
     s = make_student()
     s.assignPreference(ws)
     
-    ws.assignStudentToDay(s, "Day1")
+    ws.assignStudentToDay(s, days.day1)
     ws.copyDay1Students()
     
-    assert ws.getStudentsOnDay("Day2") == [s]
+    assert ws.getStudentsOnDay(days.day2) == [s]
     
 def test_copyDay1Students_copies_empty_day1_to_day2():
     ws = make_workshop()
     
     ws.copyDay1Students()
     
-    assert ws.getStudentsOnDay("Day2") == []
+    assert ws.getStudentsOnDay(days.day2) == []
     
 # ----------------------------------
 # Tests for isFull
@@ -112,18 +116,18 @@ def test_isFull_returns_false_when_below_capacity():
     s = make_student()
     
     s.assignPreference(ws)
-    ws.assignStudentToDay(s, "Day1")
+    ws.assignStudentToDay(s, days.day1)
     
-    assert ws.isFull("Day1") is False
+    assert ws.isFull(days.day1) is False
 
 def test_isFull_returns_true_when_at_capacity():
     ws = make_workshop(capacity=1)
     s = make_student()
     
     s.assignPreference(ws)
-    ws.assignStudentToDay(s, "Day1")
+    ws.assignStudentToDay(s, days.day1)
     
-    assert ws.isFull("Day1") is True
+    assert ws.isFull(days.day1) is True
 
 def test_isFull_returns_true_when_over_capacity():
     ws = make_workshop(capacity=1)
@@ -135,11 +139,11 @@ def test_isFull_returns_true_when_over_capacity():
         s.assignPreference(ws)
         ws.assignStudentToDay(
             s,
-            "Day1",
+            days.day1,
             forceAssign=True
         )
     
-    assert ws.isFull("Day1") is True
+    assert ws.isFull(days.day1) is True
     
 # ----------------------------------
 # Tests for getStudentsOnDay
@@ -148,22 +152,22 @@ def test_isFull_returns_true_when_over_capacity():
 def test_getStudentsOnDay_returns_empty_list_if_no_students_on_that_day():
     ws = make_workshop()
     
-    assert ws.getStudentsOnDay("Day1") == []
-    assert ws.getStudentsOnDay("Day2") == []
+    assert ws.getStudentsOnDay(days.day1) == []
+    assert ws.getStudentsOnDay(days.day2) == []
     
 def test_getStudentsOnDay_returns_none_if_invalid_day():
     ws = make_workshop()
     
-    assert ws.getStudentsOnDay("asdfasd") == None
+    assert ws.getStudentsOnDay("asdfasd") is None
     
 def test_getStudentsOnDay_returns_students_on_correct_day():
     ws = make_workshop()
     s = make_student()
     s.assignPreference(ws)
     
-    ws.assignStudentToDay(s, "Day1")
+    ws.assignStudentToDay(s, days.day1)
     
-    assert ws.getStudentsOnDay("Day1") == [s]
+    assert ws.getStudentsOnDay(days.day1) == [s]
 
     
 # ----------------------------------
@@ -176,40 +180,40 @@ def test_assignStudentToDay_assigns_student_to_correct_day():
     
     s.assignPreference(ws)
     
-    result = ws.assignStudentToDay(s, "Day1")
+    result = ws.assignStudentToDay(s, days.day1)
     
     assert result is True
-    assert s in ws.getStudentsOnDay("Day1")
+    assert s in ws.getStudentsOnDay(days.day1)
 
 def test_assignStudentToDay_returns_false_if_student_is_too_young():
-    ws = make_workshop(min_max_years={"Day1": (2, 4)})
+    ws = make_workshop(min_max_years={days.day1: (2, 4)})
     s = make_student(form_name="1A")
     s.assignPreference(ws)
 
-    assert ws.assignStudentToDay(s, "Day1") is False
+    assert ws.assignStudentToDay(s, days.day1) is False
 
 def test_assignStudentToDay_returns_false_if_student_is_too_old():
-    ws = make_workshop(min_max_years={"Day1": (1, 4)})
+    ws = make_workshop(min_max_years={days.day1: (1, 4)})
     s = make_student(form_name="5A")
     s.assignPreference(ws)
 
-    assert ws.assignStudentToDay(s, "Day1") is False
+    assert ws.assignStudentToDay(s, days.day1) is False
 
 def test_assignStudentToDay_returns_true_if_student_is_minimum_age():
-    ws = make_workshop(min_max_years={"Day1": (2, 4)})
+    ws = make_workshop(min_max_years={days.day1: (2, 4)})
     
     s = make_student(form_name="2A")
     s.assignPreference(ws)
     
-    assert ws.assignStudentToDay(s, "Day1") is True
+    assert ws.assignStudentToDay(s, days.day1) is True
 
 def test_assignStudentToDay_returns_true_if_student_is_maximum_age():
-    ws = make_workshop(min_max_years={"Day1": (2, 4)})
+    ws = make_workshop(min_max_years={days.day1: (2, 4)})
     
     s = make_student(form_name="4A")
     s.assignPreference(ws)
 
-    assert ws.assignStudentToDay(s, "Day1") is True
+    assert ws.assignStudentToDay(s, days.day1) is True
 
 def test_assignStudentToDay_forceAssign_ignores_capacity():
     ws = make_workshop(capacity=0)
@@ -219,18 +223,18 @@ def test_assignStudentToDay_forceAssign_ignores_capacity():
     
     assert ws.assignStudentToDay(
         s,
-        "Day1",
+        days.day1,
         forceAssign=True
     ) is True
 
 def test_assignStudentToDay_forceAssign_ignores_age():
-    ws = make_workshop(min_max_years={"Day1": (2, 4)})
+    ws = make_workshop(min_max_years={days.day1: (2, 4)})
     s = make_student(form_name="1A")
     s.assignPreference(ws)
     
     assert ws.assignStudentToDay(
         s,
-        "Day1",
+        days.day1,
         forceAssign=True
     ) is True
 
@@ -244,23 +248,23 @@ def test_assignStudentToDay_returns_false_if_workshop_full():
     ws = make_workshop(capacity=0)
     s = make_student()
     
-    assert ws.assignStudentToDay(s, "Day1") is False
+    assert ws.assignStudentToDay(s, days.day1) is False
     
 def test_assignStudentToDay_returns_false_if_student_already_assigned_on_day1():
     ws = make_workshop()
     s = make_student()
     s.assignPreference(ws)
     
-    assert ws.assignStudentToDay(s, "Day1") is True
-    assert ws.assignStudentToDay(s, "Day2") is False
+    assert ws.assignStudentToDay(s, days.day1) is True
+    assert ws.assignStudentToDay(s, days.day2) is False
     
 def test_assignStudentToDay_returns_false_if_student_already_assigned_on_day2():
     ws = make_workshop()
     s = make_student()
     s.assignPreference(ws)
     
-    assert ws.assignStudentToDay(s, "Day2") is True
-    assert ws.assignStudentToDay(s, "Day1") is False
+    assert ws.assignStudentToDay(s, days.day2) is True
+    assert ws.assignStudentToDay(s, days.day1) is False
     
 # ----------------------------------
 # Tests for moveStudentToDay
@@ -268,33 +272,33 @@ def test_assignStudentToDay_returns_false_if_student_already_assigned_on_day2():
 
 def test_moveStudentToDay_moves_student_to_new_workshop():
     old_ws = make_workshop()
-    new_ws = workshop.Workshop("2", 2, {"Day1": (1, 4),"Day2": (1, 4) } )
+    new_ws = workshop.Workshop("2", 2, {days.day1: (1, 4),days.day2: (1, 4) } )
     
     s = make_student()
     s.assignPreference(old_ws)
     
-    old_ws.assignStudentToDay(s, "Day1")
+    old_ws.assignStudentToDay(s, days.day1)
     
-    result = new_ws.moveStudentToDay(s, "Day1")
+    result = new_ws.moveStudentToDay(s, days.day1)
     
     assert result is True
-    assert s not in old_ws.getStudentsOnDay("Day1")
-    assert s in new_ws.getStudentsOnDay("Day1")
+    assert s not in old_ws.getStudentsOnDay(days.day1)
+    assert s in new_ws.getStudentsOnDay(days.day1)
 
 def test_moveStudentToDay_returns_false_if_student_has_no_old_workshop():
     ws = make_workshop()
     s = make_student()
     
-    assert ws.moveStudentToDay(s, "Day1") is False
+    assert ws.moveStudentToDay(s, days.day1) is False
     
 def test_moveStudentToDay_returns_false_if_student_already_has_this_workshop_on_other_day():
     ws = make_workshop()
     s = make_student()
     
     s.assignPreference(ws)
-    ws.assignStudentToDay(s, "Day1")
+    ws.assignStudentToDay(s, days.day1)
     
-    assert ws.moveStudentToDay(s, "Day2") is False
+    assert ws.moveStudentToDay(s, days.day2) is False
     
     
 # ----------------------------------
@@ -315,9 +319,9 @@ def test_getFormGroupSizes_returns_number_of_students_per_form():
     
     for s in students:
         s.assignPreference(ws)
-        ws.assignStudentToDay(s, "Day1")
+        ws.assignStudentToDay(s, days.day1)
     
-    result = ws.getFormGroupSizes("Day1")
+    result = ws.getFormGroupSizes(days.day1)
     
     assert result == Counter({
         form_a: 2,
@@ -336,9 +340,9 @@ def test_getNumberOfStudentsAloneOnDay_counts_single_student_forms():
     
     for s in [s1, s2]:
         s.assignPreference(ws)
-        ws.assignStudentToDay(s, "Day1")
+        ws.assignStudentToDay(s, days.day1)
 
-    assert ws.getNumberOfStudentsAloneOnDay("Day1") == 2
+    assert ws.getNumberOfStudentsAloneOnDay(days.day1) == 2
 
 def test_getNumberOfStudentsAloneOnDay_does_not_count_forms_with_multiple_students():
     f = form.Form("1A")
@@ -350,9 +354,9 @@ def test_getNumberOfStudentsAloneOnDay_does_not_count_forms_with_multiple_studen
     
     for s in [s1, s2]:
         s.assignPreference(ws)
-        ws.assignStudentToDay(s, "Day1")
+        ws.assignStudentToDay(s, days.day1)
     
-    assert ws.getNumberOfStudentsAloneOnDay("Day1") == 0
+    assert ws.getNumberOfStudentsAloneOnDay(days.day1) == 0
     
 
 # ----------------------------------
@@ -364,9 +368,9 @@ def test_getFormAlonePenalty_gives_penalty_of_10_for_single_student_form():
     
     s = make_student()
     s.assignPreference(ws)
-    ws.assignStudentToDay(s, "Day1")
+    ws.assignStudentToDay(s, days.day1)
     
-    assert ws.getFormAlonePenalty("Day1") == 10
+    assert ws.getFormAlonePenalty(days.day1) == 10
 
 def test_getFormAlonePenalty_gives_penalty_of_1_for_two_student_form():
     f = form.Form("1A")
@@ -378,9 +382,9 @@ def test_getFormAlonePenalty_gives_penalty_of_1_for_two_student_form():
     
     for s in [s1, s2]:
         s.assignPreference(ws)
-        ws.assignStudentToDay(s, "Day1")
+        ws.assignStudentToDay(s, days.day1)
     
-    assert ws.getFormAlonePenalty("Day1") == 1
+    assert ws.getFormAlonePenalty(days.day1) == 1
 
 def test_getFormAlonePenalty_returns_zero_for_form_of_three():
     f = form.Form("1A")
@@ -395,9 +399,9 @@ def test_getFormAlonePenalty_returns_zero_for_form_of_three():
     
     for s in students:
         s.assignPreference(ws)
-        ws.assignStudentToDay(s, "Day1")
+        ws.assignStudentToDay(s, days.day1)
     
-    assert ws.getFormAlonePenalty("Day1") == 0
+    assert ws.getFormAlonePenalty(days.day1) == 0
     
     
 # ----------------------------------
@@ -416,9 +420,9 @@ def test_getLargeFormGroupPenalty_returns_zero_for_four_students():
     
     for s in students:
         s.assignPreference(ws)
-        ws.assignStudentToDay(s, "Day1")
+        ws.assignStudentToDay(s, days.day1)
     
-    assert ws.getLargeFormGroupPenalty("Day1") == 0
+    assert ws.getLargeFormGroupPenalty(days.day1) == 0
 
 def test_getLargeFormGroupPenalty_penalises_groups_larger_than_four():
     f = form.Form("1A")
@@ -432,9 +436,9 @@ def test_getLargeFormGroupPenalty_penalises_groups_larger_than_four():
     
     for s in students:
         s.assignPreference(ws)
-        ws.assignStudentToDay(s, "Day1")
+        ws.assignStudentToDay(s, days.day1)
     
-    assert ws.getLargeFormGroupPenalty("Day1") == 1
+    assert ws.getLargeFormGroupPenalty(days.day1) == 1
 
 def test_getLargeFormGroupPenalty_for_six_students_is_four():
     f = form.Form("1A")
@@ -448,9 +452,9 @@ def test_getLargeFormGroupPenalty_for_six_students_is_four():
     
     for s in students:
         s.assignPreference(ws)
-        ws.assignStudentToDay(s, "Day1")
+        ws.assignStudentToDay(s, days.day1)
     
-    assert ws.getLargeFormGroupPenalty("Day1") == 4
+    assert ws.getLargeFormGroupPenalty(days.day1) == 4
     
     
 # ----------------------------------
@@ -468,17 +472,17 @@ def test_getLargeFormGroupPenalty_for_six_students_is_four():
     ]
 )
 def test_isStudentAgeCorrectOnDay(formName, expected):
-    ws = make_workshop(min_max_years={"Day1": (2, 4)})
+    ws = make_workshop(min_max_years={days.day1: (2, 4)})
     
     s = make_student(form_name=formName)
     
     assert ws.isStudentAgeCorrectOnDay(
         s,
-        "Day1"
+        days.day1
     ) is expected
 
 def test_isStudentAgeCorrectOnDay_returns_false_for_invalid_day():
-    ws = make_workshop(min_max_years={"Day1": (1, 4)})
+    ws = make_workshop(min_max_years={days.day1: (1, 4)})
     
     s = make_student()
     
