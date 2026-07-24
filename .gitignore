@@ -1,4 +1,5 @@
 data/actual/
 logs/
 src/__pycache__/
+tests/__pycache__/
 
