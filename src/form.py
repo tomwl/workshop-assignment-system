@@ -187,8 +187,8 @@ class Form:
                 for ws in w:
                     # try and assign them to a workshop (but may be full)
                     success = ws.assignStudentToDay(student, day)
-                    self.grouped.add(student)
                     if success:
+                        self.grouped.add(student)
                         break
             # all the free workshops that matched existing groups in the class were full
             if not success:
