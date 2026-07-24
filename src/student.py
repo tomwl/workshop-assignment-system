@@ -148,10 +148,16 @@ class Student:
         return self.workshops[day]
     
     def hasSameWorkshopsAndNotTwoDay(self):
-        wsDay1 = self.getWorkshopOnDay(days.day1)
-        wsDay2 = self.getWorkshopOnDay(days.day2)
-        if not wsDay1 is None and not wsDay2 is None and not wsDay1.isTwoDay:
-            return wsDay1 == wsDay2
+        ws_day1 = self.getWorkshopOnDay(days.day1)
+        ws_day2 = self.getWorkshopOnDay(days.day2)
+    
+        if ws_day1 is None or ws_day2 is None:
+            return False
+    
+        if ws_day1.isTwoDay:
+            return False
+    
+        return ws_day1 == ws_day2
         
     def removeFromWorkshop(self, day):
         workshop = self.workshops[day]
