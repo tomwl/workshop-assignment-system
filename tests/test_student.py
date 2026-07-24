@@ -25,9 +25,10 @@ def make_form(form_name="1A"):
 def make_student(
     first_name="Tom",
     last_name="Smith",
-    form_name="1A"
-):
-    f = make_form(form_name)
+    f = None
+    ):
+    if f is None:
+        f = make_form()
     return student.Student(first_name, last_name, f)
 
 
@@ -36,7 +37,7 @@ def make_workshop(
     capacity=10,
     min_max_years=None,
     is_two_day=False
-):
+    ):
     if min_max_years is None:
         min_max_years = {
             days.day1: (1, 4),
@@ -90,7 +91,7 @@ def test_str_returns_expected_string():
     s = make_student(
         first_name="Tom",
         last_name="Smith",
-        form_name="3A"
+        f = make_form("3A")
     )
 
     assert str(s) == "Tom Smith in class 3A"
@@ -216,7 +217,7 @@ def test_resetWorkshops_keeps_preAssigned_workshop():
 # ----------------------------------   
 
 def test_filterPreferencesByAge_removes_workshops_for_wrong_age():
-    s = make_student(form_name="3A")
+    s = make_student(f = make_form("3A"))
 
     valid_ws = make_workshop(
         "Valid",
@@ -251,9 +252,8 @@ def test_filterPreferencesByAge_removes_workshops_for_wrong_age():
 )
 def test_filterPreferencesByAge_includes_boundary_years(
     form_name,
-    expected
-):
-    s = make_student(form_name=form_name)
+    expected):
+    s = make_student(f = make_form(form_name))
 
     ws = make_workshop(
         min_max_years={
@@ -288,7 +288,7 @@ def test_getAllValidPreferences_excludes_preassigned_workshops():
     assert result == [normal_ws]
     
 def test_getAllValidPreferences_excludes_wrong_age_workshops():
-    s = make_student(form_name="1A")
+    s = make_student(f = make_form())
 
     valid_ws = make_workshop(
         "Valid",
@@ -387,7 +387,7 @@ def test_getAvailablePreferences_excludes_preassigned_workshops():
     assert result == [normal_ws]
     
 def test_getAvailablePreferences_excludes_wrong_age_workshops():
-    s = make_student(form_name="1A")
+    s = make_student(f = make_form())
 
     valid_ws = make_workshop(
         "Valid",

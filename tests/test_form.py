@@ -22,8 +22,9 @@ import workshop
 def make_form(name="1A"):
     return form.Form(name)
 
-def make_student(first_name="John", last_name="Smith", form_name="1A"):
-    f = form.Form(form_name)
+def make_student(first_name="John", last_name="Smith", f=None):
+    if f is None:
+        f = make_form()
     return student.Student(first_name, last_name, f)
 
 def make_workshop(
@@ -67,7 +68,7 @@ def test_form_name_returns_correct_name():
 
 def test_addStudent_adds_student():
     f = make_form()
-    s = make_student()
+    s = make_student(f)
     
     f.addStudent(s)
     
@@ -75,8 +76,8 @@ def test_addStudent_adds_student():
 
 def test_getStudents_returns_students():
     f = make_form()
-    s1 = make_student("John")
-    s2 = make_student("Jane")
+    s1 = make_student("John", f=f)
+    s2 = make_student("Jane", f=f)
     
     f.addStudent(s1)
     f.addStudent(s2)
@@ -89,8 +90,8 @@ def test_getStudents_returns_students():
 
 def test_studentsToAssign_returns_students_without_workshop_on_day():
     f = make_form()
-    s1 = make_student("John")
-    s2 = make_student("Jane")
+    s1 = make_student("John", f=f)
+    s2 = make_student("Jane", f=f)
     ws = make_workshop()
     
     f.addStudent(s1)
@@ -102,8 +103,8 @@ def test_studentsToAssign_returns_students_without_workshop_on_day():
 
 def test_studentsToAssign_returns_all_students_when_none_assigned():
     f = make_form()
-    s1 = make_student("John")
-    s2 = make_student("Jane")
+    s1 = make_student("John", f=f)
+    s2 = make_student("Jane", f=f)
     
     f.addStudent(s1)
     f.addStudent(s2)
@@ -112,8 +113,8 @@ def test_studentsToAssign_returns_all_students_when_none_assigned():
 
 def test_getNumberOfUnassigned_returns_correct_number():
     f = make_form()
-    s1 = make_student("John")
-    s2 = make_student("Jane")
+    s1 = make_student("John", f=f)
+    s2 = make_student("Jane", f=f)
     ws = make_workshop()
     
     f.addStudent(s1)
@@ -125,8 +126,8 @@ def test_getNumberOfUnassigned_returns_correct_number():
 
 def test_getNumberOfUnassigned_returns_zero_when_all_assigned():
     f = make_form()
-    s1 = make_student("John")
-    s2 = make_student("Jane")
+    s1 = make_student("John", f=f)
+    s2 = make_student("Jane", f=f)
     ws = make_workshop()
     
     f.addStudent(s1)
@@ -139,7 +140,7 @@ def test_getNumberOfUnassigned_returns_zero_when_all_assigned():
 
 def test_resetStudentsWorkshop_resets_non_preassigned_workshops():
     f = make_form()
-    s = make_student()
+    s = make_student(f=f)
     ws = make_workshop()
     
     f.addStudent(s)
@@ -151,7 +152,7 @@ def test_resetStudentsWorkshop_resets_non_preassigned_workshops():
 
 def test_resetStudentsWorkshop_does_not_reset_preassigned_workshops():
     f = make_form()
-    s = make_student()
+    s = make_student(f=f)
     ws = make_workshop()
     ws.preAssigned = True
     
@@ -168,7 +169,7 @@ def test_resetStudentsWorkshop_does_not_reset_preassigned_workshops():
 
 def test_resetGroups_clears_groups_and_grouped_students():
     f = make_form()
-    s = make_student()
+    s = make_student(f=f)
     
     f.groups["Workshop 1"] = {s}
     f.grouped.add(s)
@@ -185,8 +186,8 @@ def test_resetGroups_clears_groups_and_grouped_students():
 def test_groupStudentsTogether_groups_two_students_with_matching_preference():
     f = make_form()
     
-    s1 = make_student("John")
-    s2 = make_student("Jane")
+    s1 = make_student("John", f=f)
+    s2 = make_student("Jane", f=f)
     
     ws = make_workshop("Workshop 1")
     
@@ -208,8 +209,8 @@ def test_groupStudentsTogether_groups_two_students_with_matching_preference():
 def test_groupStudentsTogether_does_not_group_students_without_matching_preferences():
     f = make_form()
     
-    s1 = make_student("John")
-    s2 = make_student("Jane")
+    s1 = make_student("John", f=f)
+    s2 = make_student("Jane", f=f)
     
     ws1 = make_workshop("Workshop 1")
     ws2 = make_workshop("Workshop 2")
@@ -225,8 +226,8 @@ def test_groupStudentsTogether_does_not_group_students_without_matching_preferen
 def test_groupStudentsTogether_does_not_group_already_grouped_students():
     f = make_form()
     
-    s1 = make_student("John")
-    s2 = make_student("Jane")
+    s1 = make_student("John", f=f)
+    s2 = make_student("Jane", f=f)
     
     ws = make_workshop("Workshop 1")
     
@@ -242,8 +243,8 @@ def test_groupStudentsTogether_does_not_group_already_grouped_students():
 def test_groupStudents_does_not_group_students_already_assigned():
     f = make_form()
     
-    s1 = make_student("John")
-    s2 = make_student("Jane")
+    s1 = make_student("John", f=f)
+    s2 = make_student("Jane", f=f)
     
     ws = make_workshop("Workshop 1")
     
@@ -265,10 +266,10 @@ def test_groups_do_not_exceed_max_group_size():
     f.maxGroupSize = 3
     
     students = [
-        make_student("Student1"),
-        make_student("Student2"),
-        make_student("Student3"),
-        make_student("Student4"),
+        make_student("Student1", f=f),
+        make_student("Student2", f=f),
+        make_student("Student3", f=f),
+        make_student("Student4", f=f),
     ]
     
     ws = make_workshop("Workshop 1")
@@ -290,8 +291,8 @@ def test_groups_do_not_exceed_max_group_size():
 def test_addStudentGroupsToWorkshops_assigns_grouped_students():
     f = make_form()
     
-    s1 = make_student("John")
-    s2 = make_student("Jane")
+    s1 = make_student("John", f=f)
+    s2 = make_student("Jane", f=f)
     
     ws = make_workshop("Workshop 1")
     
@@ -308,8 +309,8 @@ def test_addStudentGroupsToWorkshops_assigns_grouped_students():
 def test_addStudentGroupsToWorkshops_does_not_assign_when_workshop_full():
     f = make_form()
     
-    s1 = make_student("John")
-    s2 = make_student("Jane")
+    s1 = make_student("John", f=f)
+    s2 = make_student("Jane", f=f)
     
     ws = make_workshop("Workshop 1", capacity=1)
     
@@ -322,7 +323,7 @@ def test_addStudentGroupsToWorkshops_does_not_assign_when_workshop_full():
 def test_addStudentGroupsToWorkshops_ignores_workshop_not_in_list():
     f = make_form()
     
-    s = make_student()
+    s = make_student(f=f)
     ws = make_workshop("Workshop 1")
     
     f.groups["Workshop 1"] = {s}
@@ -340,8 +341,8 @@ def test_addStudentGroupsToWorkshops_ignores_workshop_not_in_list():
 def test_addUnassignedStudents_assigns_student_to_matching_existing_group():
     f = make_form()
     
-    s1 = make_student("John")
-    s2 = make_student("Jane")
+    s1 = make_student("John", f=f)
+    s2 = make_student("Jane", f=f)
     
     ws = make_workshop("Workshop 1")
     
@@ -363,7 +364,7 @@ def test_addUnassignedStudents_assigns_student_to_matching_existing_group():
 def test_addUnassignedStudents_does_not_assign_student_without_matching_group():
     f = make_form()
     
-    s = make_student()
+    s = make_student(f=f)
     
     ws1 = make_workshop("Workshop 1")
     ws2 = make_workshop("Workshop 2")
@@ -382,8 +383,8 @@ def test_addUnassignedStudents_does_not_assign_student_without_matching_group():
 def test_addUnassignedStudents_does_not_assign_when_matching_workshop_is_full():
     f = make_form()
     
-    s1 = make_student("John")
-    s2 = make_student("Jane")
+    s1 = make_student("John", f=f)
+    s2 = make_student("Jane", f=f)
     
     ws = make_workshop("Workshop 1", capacity=1)
     
@@ -408,7 +409,7 @@ def test_addUnassignedStudents_does_not_assign_when_matching_workshop_is_full():
 def test_assignLeftoverStudents_assigns_student_to_available_preference():
     f = make_form()
     
-    s = make_student()
+    s = make_student(f=f)
     ws = make_workshop("Workshop 1")
     
     add_preference(s, ws)
@@ -423,7 +424,7 @@ def test_assignLeftoverStudents_assigns_student_to_available_preference():
 def test_assignLeftoverStudents_tries_next_preference_if_first_is_full():
     f = make_form()
     
-    s = make_student()
+    s = make_student(f=f)
     
     ws1 = make_workshop("Workshop 1", capacity=0)
     ws2 = make_workshop("Workshop 2", capacity=10)
@@ -440,7 +441,7 @@ def test_assignLeftoverStudents_tries_next_preference_if_first_is_full():
 def test_assignLeftoverStudents_leaves_student_unassigned_if_no_workshop_available():
     f = make_form()
     
-    s = make_student()
+    s = make_student(f=f)
     
     ws = make_workshop("Workshop 1", capacity=0)
     
@@ -460,8 +461,8 @@ def test_assignLeftoverStudents_leaves_student_unassigned_if_no_workshop_availab
 def test_students_with_fewer_available_preferences_are_processed_first():
     f = make_form()
     
-    s1 = make_student("John")
-    s2 = make_student("Jane")
+    s1 = make_student("John", f=f)
+    s2 = make_student("Jane", f=f)
     
     ws1 = make_workshop("Workshop 1")
     ws2 = make_workshop("Workshop 2")
@@ -489,8 +490,8 @@ def test_students_with_fewer_available_preferences_are_processed_first():
 def test_grouping_on_day2_does_not_use_two_day_workshops():
     f = make_form()
     
-    s1 = make_student("John")
-    s2 = make_student("Jane")
+    s1 = make_student("John", f=f)
+    s2 = make_student("Jane", f=f)
     
     two_day_ws = make_workshop(
         "Two Day Workshop",
@@ -507,7 +508,7 @@ def test_grouping_on_day2_does_not_use_two_day_workshops():
 def test_assignLeftoverStudents_does_not_assign_two_day_workshop_on_day2():
     f = make_form()
     
-    s = make_student()
+    s = make_student(f=f)
     
     two_day_ws = make_workshop(
         "Two Day Workshop",

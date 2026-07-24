@@ -19,8 +19,9 @@ import student
 # Helper functions
 # ----------------------------------
 
-def make_student(first_name="1", last_name="1", form_name="1A"):
-    f = form.Form(form_name)
+def make_student(first_name="1", last_name="1", f = None):
+    if f is None:
+        f = form.Form("1A")
     return student.Student(first_name, last_name, f)
     
 def make_workshop(capacity=2, min_max_years=None, is_two_day=False):
@@ -187,14 +188,14 @@ def test_assignStudentToDay_assigns_student_to_correct_day():
 
 def test_assignStudentToDay_returns_false_if_student_is_too_young():
     ws = make_workshop(min_max_years={days.day1: (2, 4)})
-    s = make_student(form_name="1A")
+    s = make_student(f = form.Form("1A"))
     s.assignPreference(ws)
 
     assert ws.assignStudentToDay(s, days.day1) is False
 
 def test_assignStudentToDay_returns_false_if_student_is_too_old():
     ws = make_workshop(min_max_years={days.day1: (1, 4)})
-    s = make_student(form_name="5A")
+    s = make_student(f = form.Form("5A"))
     s.assignPreference(ws)
 
     assert ws.assignStudentToDay(s, days.day1) is False
@@ -202,7 +203,7 @@ def test_assignStudentToDay_returns_false_if_student_is_too_old():
 def test_assignStudentToDay_returns_true_if_student_is_minimum_age():
     ws = make_workshop(min_max_years={days.day1: (2, 4)})
     
-    s = make_student(form_name="2A")
+    s = make_student(f = form.Form("2A"))
     s.assignPreference(ws)
     
     assert ws.assignStudentToDay(s, days.day1) is True
@@ -210,7 +211,7 @@ def test_assignStudentToDay_returns_true_if_student_is_minimum_age():
 def test_assignStudentToDay_returns_true_if_student_is_maximum_age():
     ws = make_workshop(min_max_years={days.day1: (2, 4)})
     
-    s = make_student(form_name="4A")
+    s = make_student(f = form.Form("4A"))
     s.assignPreference(ws)
 
     assert ws.assignStudentToDay(s, days.day1) is True
@@ -229,7 +230,7 @@ def test_assignStudentToDay_forceAssign_ignores_capacity():
 
 def test_assignStudentToDay_forceAssign_ignores_age():
     ws = make_workshop(min_max_years={days.day1: (2, 4)})
-    s = make_student(form_name="1A")
+    s = make_student(f = form.Form("1A"))
     s.assignPreference(ws)
     
     assert ws.assignStudentToDay(
@@ -335,8 +336,8 @@ def test_getFormGroupSizes_returns_number_of_students_per_form():
 def test_getNumberOfStudentsAloneOnDay_counts_single_student_forms():
     ws = make_workshop()
     
-    s1 = make_student("1", "1", "1A")
-    s2 = make_student("2", "1", "1B")
+    s1 = make_student("1", "1", f = form.Form("1A"))
+    s2 = make_student("2", "1", f = form.Form("2A"))
     
     for s in [s1, s2]:
         s.assignPreference(ws)
@@ -474,7 +475,7 @@ def test_getLargeFormGroupPenalty_for_six_students_is_four():
 def test_isStudentAgeCorrectOnDay(formName, expected):
     ws = make_workshop(min_max_years={days.day1: (2, 4)})
     
-    s = make_student(form_name=formName)
+    s = make_student(f = form.Form(formName))
     
     assert ws.isStudentAgeCorrectOnDay(
         s,
