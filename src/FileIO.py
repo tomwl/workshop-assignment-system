@@ -7,14 +7,14 @@ Handles the input and output of data for the program
 @author: tom
 """
 
+from pathlib import Path
 import pandas as pd
+import re
+from difflib import SequenceMatcher
 import workshop as ws
 import student
 import form
 import days
-import re
-import unicodedata
-from difflib import SequenceMatcher
 from logging_config import logger
 
 class FileIO:
@@ -278,9 +278,6 @@ def readWriteStudentChoices(fin,
         # ToDo: handle this possible exception better...!
         print("ValueError: writing failed!")
     
-def strip_accents(string): 
-    return "".join(c for c in unicodedata.normalize("NFD", string) if not unicodedata.combining(c))         
-
 def createForms(students, formName, firstName, lastName):
     forms = []
     for index, row in students.iterrows():
@@ -355,16 +352,18 @@ def compareStudentsAssignedWithActualStudents(fname_actual, fname_sorted, fout):
     print(len(missingStudents))
     # finally write the leftovers to file
     df = pd.DataFrame(missingStudents, columns=['Name'])
-    with pd.ExcelWriter("FehlenderSchuelerinnen.xlsx") as writer: 
+    with pd.ExcelWriter(fout) as writer: 
         df.to_excel(writer, index=False)    
         
 def main():
-    #readWriteStudentChoices("Workshoptage 2026__Zukunft gestalten__Demokratie leben_.xlsx",
-    #                        "student_data_2026.xlsx", 
-    #                        5, 6, 7, 8)
-    compareStudentsAssignedWithActualStudents("all_students_2026.xls", 
-                                              "Workshoptage 2026__Zukunft gestalten__Demokratie leben_.xlsx", 
-                                              "unassignedStudents.xlsx")
+    data_out_dir = Path.cwd() / ".." / "data" / "actual"
+    data_in_dir = r"C:\\Users\\tom\\Documents\\Python Scripts\\Workshop_Draschestrasse\\2026\\"
+    readWriteStudentChoices(data_in_dir + "Workshoptage 2026__Zukunft gestalten__Demokratie leben_.xlsx",
+                            data_in_dir + "student_data_2026_test.xlsx", 
+                            5, 6, 7, 8)
+    compareStudentsAssignedWithActualStudents(data_in_dir + "all_students_2026.xls", 
+                                              data_in_dir + "Workshoptage 2026__Zukunft gestalten__Demokratie leben_.xlsx", 
+                                              data_out_dir / "unassignedStudents.xlsx")
     
 if __name__ == '__main__':
     main()

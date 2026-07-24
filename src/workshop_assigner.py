@@ -7,7 +7,7 @@ A program to organise the workshop days at Draschestraße
 @author: tom
 """
 
-import os
+from pathlib import Path
 from collections import Counter
 import FileIO
 from logging_config import logger
@@ -197,11 +197,11 @@ def orderForms(forms):
 def main():
     try:
         # read in the student preferences and workshop names
-        dataPath = os.path.join(os.getcwd(), '..\\data\\actual\\')
-        preferenceFile = os.path.join(dataPath, 'student_data_2026.xlsx')
-        workshopsFile = os.path.join(dataPath, 'Workshops_LIO.xlsx')
-        studentFileOut = os.path.join(dataPath, 'test_students_1.xlsx')
-        workshopsFileOut = os.path.join(dataPath, 'test_workshops_1.xlsx')
+        dataPath = Path.cwd() / ".." / "data" / "actual"
+        preferenceFile = dataPath / "student_data_2026.xlsx"
+        workshopsFile = dataPath / "Workshops_LIO.xlsx"
+        studentFileOut = dataPath / "test_students_1.xlsx"
+        workshopsFileOut = dataPath / "test_workshops_1.xlsx"
         fileIO = FileIO.FileIO(
             preferenceFile, workshopsFile, studentFileOut, workshopsFileOut)
         workshops = fileIO.initialiseWorkshops()
@@ -211,7 +211,7 @@ def main():
         
         # force assign students that have already had a workshop decided for them
         preAssignedStudents = fileIO.blockStudents(
-            os.path.join(dataPath, 'ListeChinesischUndSI.xlsx'), 
+            dataPath / "ListeChinesischUndSI.xlsx", 
             getAllStudents(forms), 
             workshops)
                 
