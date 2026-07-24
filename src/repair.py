@@ -11,7 +11,6 @@ import scoring
 def tryMoveSomeoneElse(unassignedStudent,
                        desiredWorkshop,
                        workshops,
-                       forms,
                        day):
     
     other_day = days.day2 if day == days.day1 else days.day1
@@ -60,7 +59,7 @@ def tryMoveSomeoneElse(unassignedStudent,
 
     return False
 
-def repairStudent(student, workshops, forms, day):
+def repairStudent(student, workshops, day):
     prefs = student.getAllValidPrefences(day)
     for desiredWorkshop in prefs:
         # skip two day workshops
@@ -76,7 +75,6 @@ def repairStudent(student, workshops, forms, day):
         if tryMoveSomeoneElse(student,
                               desiredWorkshop,
                               workshops,
-                              forms,
                               day):
             return True
 
@@ -101,12 +99,12 @@ def repairAssignments(forms, workshops):
         for student in students:
             students_checked += 1
             if student.getWorkshopOnDay(days.day1) is None:
-                if repairStudent(student, workshops, forms, days.day1):
+                if repairStudent(student, workshops, days.day1):
                     successful_moves += 1
                     improved = True
 
             if student.getWorkshopOnDay(days.day2) is None:
-                if repairStudent(student, workshops, forms, days.day2):
+                if repairStudent(student, workshops, days.day2):
                     successful_moves += 1
                     improved = True
                     
